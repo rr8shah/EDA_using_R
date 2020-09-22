@@ -1,0 +1,188 @@
+---
+title: "Diamonds Dataset"
+author: "Akshay Kapoor and Rishi Shah"
+date: "01/02/2020"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+The dataset is about diamonds and the attributes that affect the price of a diamond.
+This dataset features *prices* and various attributes such as *carat*, *cut*, *color*, *clarity* and some physical measurement features like *depth*, *table* and *x,y,z* dimensional data for 53,400 diamonds. 
+
+
+```{r include=FALSE}
+library(tidyverse)
+library(ggplot2)
+library(Rmisc)
+library(Hmisc)
+library(GGally)
+library(RColorBrewer)
+dataset <- diamonds
+```
+
+We can observe that data has 53,940 samples and have data corresponding to  `r ncol(diamonds) ` features for each of these observations.
+
+Let's look at each feature of data individually : 
+
+1. Carat: It stored as a numerical ratio variable and represents the weight of the diamond (one carat = 200 milligrams). It varies from 0.2 to 5.01 with a mean of 0.7979 for this dataset.
+
+2. Cut: It is an ordered categorical variable which represents the quality of cut for the diamond. It is categorized as "Fair", "Good", "Very Good", "Premium", "Ideal" (in increasing order).
+
+3. Color: It is an ordered categorical variable which represents the color of the diamond. It is categorized as "Fair", "Good", "Very Good", "Premium", "Ideal" (in increasing order).
+
+4. Clarity: It is an ordered categorical variable which exhibits the measurement of how clear the diamond is. It is categorized as "I1" (worst), "SI2", "SI1", "VS2", "VS1", "VVS2", "VVS1", "IF"(best).
+
+5. x: It is a numerical variable, representing length of diamond in mm, it ranges from 0 to 10.74mm in this dataset.
+
+6. y: It is a numerical variable, representing breadth of diamond in mm, it ranges from 0 to 58.9 mm in this dataset.
+
+7. z: It is a numerical variable, representing depth of diamond in mm, it ranges from 0 to 31.8 mm in this dataset.
+
+8. Depth: It is quantitative measure of total depth percentage and hence is a numerical-ratio variable, It ranges from 43 to 79 and is calculated using the x,y and z dimensions.
+
+9. Table: It is a numerical variable, which represents width of top of diamond relative to widest point and it ranges from 43 to 95.
+
+10. Price: It is a numerical variable, which represents the price of diamond in US dollars, it ranges from $326 to $18,823.
+
+
+### Summarising Data Features
+
+Before heading off to in-depth analysis of dataset, let's have a quick glance over the statistics of each variable present in the diamonds dataset. We  would be using a summary command for understanding the variation of each feature. 
+
+```{r echo=FALSE, fig.width=5, fig.height=3}
+summary(diamonds)
+```
+
+**Observations from feature summary**
+
+Assessing the above information, we can see we have quantitative predictor variables as carat,x,y,z,table,depth and qualitative predictor variables as cut, clarity and color. All these features affect the dependent price variable for an individual sample.
+Also, we can form a basic notion about the data, that most of diamonds present in the data are of "Ideal" cut (21551 in number), "SI1" clarity (13065 in number) and of color "G" (11292 in number).
+
+
+## Analysis on the data
+
+To begin with the basic analysis, let's calculate correlation among features using ggpair() from GGally library.
+
+
+### Correlation between different variables
+
+```{r include=FALSE}
+ggpairs(diamonds)
+```
+
+From the correlation calculations, We have the following observations:
+1. There is a strong correlation among Price, carat and dimensional parameters(all correlation values are greater than 0.85). 
+2. Price exhibits very limited or no relationship with parameter table and depth.
+3. Carat is highly correlated to x,y,z, which is as per our expectations i.e. volume and weight would be proportional to each other.
+
+Because of high correlation value, we plotted carat vs. price scatter plot.
+
+```{r echo = FALSE, fig.width=5, fig.height=3}
+
+c <- ggplot(diamonds, aes(x = carat, y = price ))
+c + geom_point(color = "yellow", alpha = 0.2) + geom_smooth() + geom_vline(xintercept = 2.5 , color = "red", size = 1, linetype ="dashed")+ geom_vline(xintercept = 3, color = "orange", size =1 , linetype ="dashed") + theme_bw()
+
+```
+
+On plotting carat vs price, we have the following observations :
+1. As carat i.e. the weight of diamond increases, the price of diamond increases.
+2. Also, we have very few samples for higher carat diamonds, only 0.265% diamonds have a carat value greater than 2.5 and this proportion further reduces to 0.074% for carat value >3.
+
+
+To dive deep into analysis, let's plot carat against the price for various colours.in order to visualise the relationship among price vs. carat for different diamond colors.
+
+```{r echo = FALSE, out.width='.49\\linewidth', fig.width=5, fig.height=3,fig.show='hold',fig.align='center'}
+c <- ggplot(diamonds, aes(x = carat, y = log(price), color = color))
+c + geom_point() + facet_grid(.~color) + geom_hline(yintercept =  9 , size =1, color = "black")+geom_vline(xintercept =  2.5 , size =1, color = "black")
+
+data_9 <- filter(diamonds, price > 9000)
+d <- ggplot(data_9, aes(x = carat, y = log(price), color = color))
+d + geom_point() + facet_grid(.~color) 
+
+```
+By looking at the above plot, we can visualize that as carat increases, the price of diamond increases and this holds true for every color of the diamonds.
+Furthermore,as the color of diamond increases (ie D being most transparent and J being most colorful) there is a slight curve in the graph, which gives an idea that high carat diamonds have dense distribution for more colorful diamonds compared to transparent diamonds.  
+It looks like for higher price diamonds,the color quality is compensated by improving the carat value.
+To analyse further we would plot graph higher price diamonds (>9000 USD) vs carat for different diamond colors(Above right).
+
+Inspired by the above information, we are motivated to see the effect of clarity on price vs. carat plots.
+
+```{r echo = FALSE, fig.width=5, fig.height=3}
+p <- ggplot(diamonds, aes(x = carat, y = price, color = clarity))
+p + geom_point() + facet_grid(.~clarity) + geom_smooth()
+
+
+```
+
+By looking at the above plot we deduce following observations:
+
+Similar to the color quality, as clarity of diamond reduces (ie I1 worst clear and J Most clear),curve in price vs carat graph is observed in the graph, which points to an idea that less clarity diamonds tend to have high carat value to improve the price value.
+
+These observations are supported by the following statistical calculations displayed below. 
+```{r echo = FALSE}
+group_color <- dataset %>% group_by(color)
+fil_group_color <- filter(group_color, color == 'D')
+ci_D <- CI(fil_group_color$price, ci = 0.95)
+fil_group_color <- filter(group_color, color == 'E')
+ci_E <- CI(fil_group_color$price, ci = 0.95)
+fil_group_color <- filter(group_color, color == 'F')
+ci_F <- CI(fil_group_color$price, ci = 0.95)
+fil_group_color <- filter(group_color, color == 'G')
+ci_G <- CI(fil_group_color$price, ci = 0.95)
+fil_group_color <- filter(group_color, color == 'H')
+ci_H <- CI(fil_group_color$price, ci = 0.95)
+fil_group_color <- filter(group_color, color == 'I')
+ci_I <- CI(fil_group_color$price, ci = 0.95)
+fil_group_color <- filter(group_color, color == 'J')
+ci_J <- CI(fil_group_color$price, ci = 0.95)
+
+ci <- cbind(ci_D,ci_E,ci_F,ci_G,ci_H,ci_I,ci_J)
+ci_price <- data.frame(t(ci))
+ci_price_re <- rename(ci_price, c("upper"="upper_price", "mean"="mean_price", "lower" = "lower_price")) 
+
+fil_group_color <- filter(group_color, color == 'D')
+ci_D <- CI(fil_group_color$carat, ci = 0.95)
+fil_group_color <- filter(group_color, color == 'E')
+ci_E <- CI(fil_group_color$carat, ci = 0.95)
+fil_group_color <- filter(group_color, color == 'F')
+ci_F <- CI(fil_group_color$carat, ci = 0.95)
+fil_group_color <- filter(group_color, color == 'G')
+ci_G <- CI(fil_group_color$carat, ci = 0.95)
+fil_group_color <- filter(group_color, color == 'H')
+ci_H <- CI(fil_group_color$carat, ci = 0.95)
+fil_group_color <- filter(group_color, color == 'I')
+ci_I <- CI(fil_group_color$carat, ci = 0.95)
+fil_group_color <- filter(group_color, color == 'J')
+ci_J <- CI(fil_group_color$carat, ci = 0.95)
+
+ci <- cbind(ci_D,ci_E,ci_F,ci_G,ci_H,ci_I,ci_J)
+ci_car <- data.frame(t(ci))
+ci_car_re <- rename(ci_car, c("upper"="upper_carat", "mean"="mean_carat", "lower" = "lower_carat"))
+
+confedence_table <- cbind(ci_price_re, ci_car_re)
+confedence_table
+
+```
+
+
+## Conclusion
+
+Form the above graph and tables, We have following conclusions:
+
+1. Our sample has few high carat values(>2.5) compared to lower.
+
+2. These high carat values usually correspond to the diamonds having low color quality or poorer clarity.
+
+Thus, we can conclude that the higher carats tend to compensate for the low color quality and poorer finish in high price diamonds.
+
+
+### Team Contribution
+
+This report is been presented by Joint efforts of Akshay Kapoor and Rishi Shah. Akshay has contributed in covariance calculations and plotting the right graphs whereas Rishi has put together the report for knitting and carried out analysis for the various graphs plotted in the report.
+
