@@ -1,0 +1,185 @@
+---
+title: "Exploratory Data Analysis of Flower Dataset"
+author: "Rishi Shah, Akshay Kapoor"
+date: "31/01/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+Flower.csv is comma separeted file containing the data of iris-setosa, iris-virginica, and iris-versicolor classes of flowers. Data has two features named petal length and petal width for the given classes of data.
+
+petal_length : It is numerical vector giving length of the petal
+
+petal_width : It is numerical vector giving width of the petal
+
+We have to carry out the exploratory data analysis of the given data set in order to improve our knowledge to impress our grandpa who likes flowers a lot.
+
+## Analysis
+
+```{r echo=FALSE, include=FALSE, fig.align = 'center'}
+library(tidyverse)
+library(ggplot2)
+library(Rmisc)
+library(GGally)
+library(dplyr)
+library(grid)
+library(magrittr)
+library(knitr)
+
+dataset <- read.csv("D:/Canada/University of Waterloo/2. Winter 2020/MSCI 718/Assignments/MSCI 599MSCI 718 - Winter 2020 - 1222020 - 304 AM/flower.csv", header = TRUE)
+
+```
+```{r echo =FALSE}
+df <- data.frame(dataset)
+df1 <- df[sample(nrow(df), 5), ]
+rownames(df1) <- NULL
+
+```
+
+To begin the analysis, we need to summarise the dataset first to understand the size of the dataset and features available to us.
+```{r echo=FALSE}
+str(dataset)
+```
+
+It can be shown from the summary that Total **number of observations available in the dataset is 150**. There are a total of **3 variables** named petal-length, petal-width and class of the flower. Petal length and petal width are of the numerical data type. While class is the factor data type with 3 levels namely iris-setosa, iris-virginica, and iris-versicolor.
+
+### Central tendency, Dispersion and Range of the Dataset
+
+In order to understand each variable we need to calculate it's statistics and hence understand central tendency, dispersion and range of the same.
+
+```{r echo=FALSE}
+summary(dataset)
+```
+
+**1. Petal_length :** Petal length is the length of the petal within the range of 1 o 6.9. It can be observed from the above summary that 50% of the petal length resides within the range of 1.6 to 5.1. 
+
+```{r echo = FALSE, out.width='.49\\linewidth', fig.width=3, fig.height=3,fig.show='hold',fig.align='center'}
+s <- ggplot(dataset, aes(x = petal_length))
+s + geom_density(fill = 'red') 
+o <- ggplot(dataset, aes(x = petal_width))
+o + geom_density(color = "Blue", fill = "green")
+
+```
+
+From the above density plot of the petal_length, it can be clearly depicted that the data distribution is coming from two different classes having two different mean and standard deviation.Mean of the Petal_length for the complete dataset is 3.759 and standard deviation is 1.7644.
+
+
+**2. Petal_width :** Width of petal ranges between 0.1 to 2.5.The interquartile range is 1.5. Above density plot of petal_width represents the distribution of the width. similar to length, Both the classes of flowers have different mean petal_width and distribution.  
+
+petal_width Mean of the entire data set is 1.199 and the standard deviation is `r sd(dataset$petal_width)`. 
+
+Moving on, we can explore the central tendency and dispersion of the features for each class of the iris flower. Following table represents the mean and standard deviation for each class of the data.
+
+```{r echo = FALSE}
+class1 <- dataset%>% filter(class == 'Iris-setosa')
+class1_length_mean <- mean(class1$petal_length)
+class1_length_sd <- sd(class1$petal_length)
+class1_width_mean <- mean(class1$petal_width)
+class1_width_sd <- sd(class1$petal_length)
+
+class2 <- dataset%>% filter(class == 'Iris-versicolor')
+class2_length_mean <- mean(class2$petal_length)
+class2_length_sd <- sd(class2$petal_length)
+class2_width_mean <- mean(class2$petal_width)
+class2_width_sd <- sd(class2$petal_length)
+
+class3 <- dataset%>% filter(class == 'Iris-virginica')
+class3_length_mean <- mean(class3$petal_length)
+class3_length_sd <- sd(class3$petal_length)
+class3_width_mean <- mean(class3$petal_width)
+class3_width_sd <- sd(class3$petal_length)
+
+width_mean <- c(class1_width_mean, class2_width_mean, class3_width_mean) 
+length_mean <- c(class1_length_mean, class2_length_mean, class3_length_mean)
+width_sd <- c(class1_width_sd, class2_width_sd, class3_width_sd)
+length_sd <- c(class1_length_sd, class2_length_sd, class3_length_sd)
+class <- c('Iris-setosa', 'Iris-versicolor', 'Iris-virginica')
+df_mean_sd <- data.frame(width_mean,length_mean, width_sd, length_sd, class)
+
+df_mean_sd
+```
+
+Below plotted blox plot gives us the relative visualization of length and width for different classes and will help us to classify the different classes of the flowers.
+
+
+```{r echo = FALSE, out.width='.49\\linewidth', fig.width=5, fig.height=3,fig.show='hold',fig.align='center'}
+
+w2 <- ggplot(dataset, aes(x = class , y = petal_width))
+w2 + geom_boxplot(aes(fill = class))
+l2 <- ggplot(dataset, aes(x = class , y = petal_length))
+l2 + geom_boxplot(aes(fill = class))
+
+```
+
+
+To visualise the distribution of all the data points in regard to the different flowers, We plotted the petal width over the petal length in a scatter plot.
+
+
+```{r fig.height = 4, fig.width = 6, echo = FALSE}
+
+g <- ggplot(dataset, aes(x = petal_length, y = petal_width))
+g + geom_point(aes(color = class))
+
+```
+
+From the above scatter plot, we infer that iris-setosa flower has the lowest petal as its petal_lengths and widths are clustered at lower value.While in contrast, iris-virginica has the largest petal from all the other classes of iris flowers.
+
+This result can be supported by looking at the confidence interval. Following plots represent the confidence interval of the pelat_length and petal_width for every class.
+
+```{r echo = FALSE, out.width='.49\\linewidth', fig.width=5, fig.height=5,fig.show='hold',fig.align='center'}
+
+UL_L <- c(CI(class1$petal_length, ci=0.95)[1])
+UL_L <- c(UL_L,CI(class2$petal_length, ci=0.95)[1])
+UL_L <- c(UL_L,CI(class3$petal_length, ci=0.95)[1])
+LL_L <- c(CI(class1$petal_length, ci=0.95)[3])
+LL_L <- c(LL_L,CI(class2$petal_length, ci=0.95)[3])
+LL_L <- c(LL_L,CI(class3$petal_length, ci=0.95)[3])
+M_L <- c(CI(class1$petal_length, ci=0.95)[2])
+M_L <- c(M_L,CI(class2$petal_length, ci=0.95)[2])
+M_L <- c(M_L,CI(class3$petal_length, ci=0.95)[2])
+
+df = data.frame(cbind(UL_L,LL_L,M_L))
+ggplot(df, aes(x = c(1,2,3), y = df$M_L)) + geom_point(shape=21, size=1.5, fill="white") + geom_errorbar(aes(ymin = df$LL_L, ymax = df$UL_L, color = factor(c(1,2,3)), width = 0.2)) + xlab('Flowers') + ylab('petal_length') + theme_bw() + coord_flip()
+
+UL_W <- c(CI(class1$petal_width, ci=0.95)[1])
+UL_W <- c(UL_W,CI(class2$petal_width, ci=0.95)[1])
+UL_W <- c(UL_W,CI(class3$petal_width, ci=0.95)[1])
+LL_W <- c(CI(class1$petal_width, ci=0.95)[3])
+LL_W <- c(LL_W,CI(class2$petal_width, ci=0.95)[3])
+LL_W <- c(LL_W,CI(class3$petal_width, ci=0.95)[3])
+M_W <- c(CI(class1$petal_width, ci=0.95)[2])
+M_W <- c(M_W,CI(class2$petal_width, ci=0.95)[2])
+M_W <- c(M_W,CI(class3$petal_width, ci=0.95)[2])
+
+df_W = data.frame(cbind(UL_W,LL_W,M_W))
+ggplot(df_W, aes(x = c(1,2,3), y = df_W$M_W)) + geom_point(shape=21, size=1.5, fill="white") + geom_errorbar(aes(ymin = df_W$LL_W, ymax = df_W$UL_W, color = factor(c(1,2,3)), width = 0.2)) + xlab('Flowers') + ylab('petal_width') + theme_bw() + coord_flip()
+
+```
+Looking at the above confidence interval graph for petal_length and petal_width and calculations carried out in R for different class, we can observe following things:
+
+1. Petal_length of the iris-setosa(class 1) has minimum mean (1.464) with a confidence interval(95%) of 1.5133 to 1.41468. On the contrary, iris - virginica(class 3) flower has the largest mean petal_length of 5.552  and can be found within  5.7088 to 5.3951, with a confidence of 95%. Mean petal length of iris-versicolor(class 2) is 4.260 which is greater than the class 1 flower but less than the class 3 flower.
+
+2. Similar to the length, iris-setosa(class 1) has minimum mean width equals to 0.244 and can be found with in the range of 0.2744 to 0.2135, with a confidence of 95%. While iris-virginica(class 3) has the maximum mean width of 2.026 with 95% confidence margin of 0.07805 on both positive and negative side of mean. iris-versicolor (class 2) has an average mean petal width of 1.326.
+
+With the quantitative evidence from the calculations above, we can say that **iris-setosa(class 1) flower has the smallest petal** while **iris-virginica has the largest petal**.
+
+## Conclusion
+
+Comparing the estimate of means with 95% confidence for petal length and petal width of given dataset and carrying out the exploratory data analysis on the same, We can conclude that iris-setosa (class 1) tend to have the smallest petal and iris-virginica(class 3) tend to have the largest petal.
+
+## References
+
+1. Field, A., Miles, J., and Field, Z. (2012).Discovering Statistics using R.https://studysites.uk.sagepub.com/dsur/ 
+2. https://r4ds.had.co.nz/
+3. https://stackoverflow.com/questions/34535155/figure-size-in-r-markdown
+
+
+
+### Team Contribution
+
+Akshay Kapoor and Rishi Shah have worked together on this report.Rishi has contributed in data exploration and plotig the right graphs whereas Akshay has worked on knitting the report and analysing the data.
