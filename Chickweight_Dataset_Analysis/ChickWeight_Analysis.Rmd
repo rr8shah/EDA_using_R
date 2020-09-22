@@ -1,0 +1,191 @@
+---
+title: "Chicken Weight Dataset"
+author: "Akshay Kapoor and Rishi Shah"
+date: "02/02/2020"
+output: pdf_document
+---
+
+```{r include = FALSE}
+summary(ChickWeight)
+str(ChickWeight)
+```
+# Looking at the Dataset
+
+A help search on this dataset in R returns the following summary of data :
+The chickWeight data is a built in data “Weight versus age of chicks on different diets”, this dataframe has 578 rows and 4 columns from an experiment on the effect of diet on early growth of chicks.It includes the following data-features : 
+Weight: a numeric vector giving the body weight of the chick (gm).
+Time: a numeric vector giving the number of days since birth when the measurement was made.
+Chick: an ordered factor with levels 18 < ... < 48 giving a unique identifier for the chick. The ordering of the levels groups chicks on the same diet together and orders them according to their final weight (lightest to heaviest) within diet.
+Diet: a factor with levels 1,2,3, 4 indicating which experimental diet the chick received.
+
+## Let's look at a few samples from the data set
+
+```{r echo=FALSE, include=FALSE}
+library(tidyverse)
+library(ggplot2)
+library(Rmisc)
+library(Hmisc)
+library(knitr)
+```
+
+``` {r, see_the_data, echo = TRUE}
+chicken_dataset <-ChickWeight
+df_temp<-chicken_dataset[sample(nrow( chicken_dataset), 5),]
+rownames(df_temp)<-NULL
+print(df_temp)
+#chicken_dataset
+```
+
+By looking at the above data, we can see we have chicken weight for various time/days(vary from day=0 to day =21), and this data is for various chick which are labelled (from 1 to 50) and are kept on different diets(diets vary in group of chicks and are labelled as 1,2,3 and 4).
+
+# Let's dive deep into each parameter’s data we collected for our experiment :
+```{r, include = FALSE}
+range(ChickWeight$weight)
+mean(ChickWeight$weight)
+median(ChickWeight$weight)
+sd(ChickWeight$weight)
+```
+**1. Weight:** It's a numerical- ratio variable, for the given data it varies from 35 gms to 373 gms with a mean of 121.82 gms, median  of 103 gms and  standard deviation of 71.07.Lets see the distribution of weight for the given data in the density plot, depicted below. By looking at the plot we can see, the weight distribution is positively skewed, which means there is asymmetry in data, which can be because of the following :
+
+
+
+#plot the red plot
+
+`
+``` {r, echo = FALSE}
+chicken_dataset <- ChickWeight
+ggplot(data=chicken_dataset, aes(x = weight, fill = "red")) +
+  geom_density()+ xlim(-5,450)
+```
+
+1. Different diets affect the weight in different way and there non- uniform distribution of number of chicken for each diet.
+2. Data for some chicks is not taken for all of the days.
+
+
+``` {r,include = FALSE}
+chicken_time <- chicken_dataset$Time
+summary(chicken_time)
+
+```
+
+**2. Time**: It is a numerical ratio variable, measured in number of days.It represents number of days from the birth of the chicken.If we calculate the statistic for this data, we find out it has a mean count of 10.72, median count of 10 days and a range of 0 to 21 days.
+By looking at these statistics we can say that we do not have access for chicken data for all of the chickens for all 0 to 21 days.
+
+``` {r,include = FALSE}
+chicks<-chicken_dataset$Chick
+chicks
+
+```
+**3. Chick**: Chicks column represent the labels used to identify the 50 chickens kept under observation, it is stored as ordinal data ranging from 1 to 50.Let's plot the number of observations we have for various chicks.
+
+``` {r,echo = FALSE}
+chicks<-chicken_dataset$Chick
+ggplot(chicken_dataset, aes (x = Chick, y= Time)) + geom_col() 
+```
+
+
+By looking at the above plot we can see, except for chick specified as 18,16,15,8 and 44 we have similar day (time) data for remaining chicks, thus verifying the point(2) made above.
+
+4.Diet: It's a nominal parameter, which varies as numerical values as 1,2,3,4.Lets see the bar plot for each type of Diet.
+``` {r, echo = FALSE}
+library(ggplot2)
+ggplot(data = chicken_dataset, aes(x=Diet, fill= Diet))+geom_bar()
+```
+
+``` {r, include = FALSE}
+data_diet1 <- filter(ChickWeight,Diet==1)
+data_diet2 <- filter(ChickWeight,Diet==2)
+data_diet3 <- filter(ChickWeight,Diet==3)
+data_diet4 <- filter(ChickWeight,Diet==4)
+
+(dim(data_diet1))
+(dim(data_diet2))
+(dim(data_diet3))
+(dim(data_diet4))
+
+
+```
+
+From the Plot and counts performed in R file, we can see, we have 220 observations for Diet 1, 120 observations for Diet 2, 120 observations for Diet 3 and 118 observations for Diet 4. Moreover, if we measure observations taken at day 0, we would find that there were 20,10,10 and 10 observations for diet 1,2,3 and 4 respectively.
+
+
+# Analysing the data
+
+Since the experiment is about understanding effect of four diets (1,2,3 and 4) lets see on chicken weight, the weight of chicken at day 0.
+By looking at the plot plotted on the left and calculations performed in R, we can say that at day  = 0, we had following observations for chicks on these four diets.
+``` {r, echo =FALSE}
+library("dplyr")
+diet1_day0 <- chicken_dataset %>% filter(Time==0 & Diet==1 )
+diet2_day0 <- chicken_dataset %>% filter(Time==0 & Diet==2 )
+diet3_day0 <- chicken_dataset %>% filter(Time==0 & Diet==3 )
+diet4_day0 <- chicken_dataset %>% filter(Time==0 & Diet==4 )
+
+weight_CI_diet1_day0 <- CI(diet1_day0$weight, ci =0.95)
+weight_CI_diet2_day0 <- CI(diet2_day0$weight, ci =0.95)
+weight_CI_diet3_day0 <- CI(diet3_day0$weight, ci =0.95)
+weight_CI_diet4_day0 <- CI(diet4_day0$weight, ci =0.95)
+
+
+max_CI_day0 = c(weight_CI_diet1_day0[1],weight_CI_diet2_day0[1], weight_CI_diet3_day0[1], weight_CI_diet4_day0[1])
+min_CI_day0 = c(weight_CI_diet1_day0[3],weight_CI_diet2_day0[3], weight_CI_diet3_day0[3], weight_CI_diet4_day0[3])
+mean_CI_day0 =  c(weight_CI_diet1_day0[2],weight_CI_diet2_day0[2], weight_CI_diet3_day0[2], weight_CI_diet4_day0[2])
+
+df_diet_day0 = data.frame(cbind(min_CI_day0, mean_CI_day0, max_CI_day0))
+row.names(df_diet_day0) <- c(1,2,3,4)
+
+ggplot(df_diet_day0, aes(x = c(1,2,3,4), y = mean_CI_day0)) + geom_point(shape=21, size=1, fill="white") + geom_errorbar(aes(ymin = min_CI_day0, ymax =max_CI_day0, color = factor(c(1,2,3,4)), width = 0.2)) + ylim(39, 43) + xlab('Diet') + ylab('Weight') + theme_bw() + coord_flip() 
+
+```
+
+
+
+Diet 1 : has a mean weight of 41.4 gms can be found from 40.93 gms to 41.46 gms with 95 percent confidence interval.  
+Diet 2: has a mean weight of 41.76 gms can be found among 39.63 gms to 41.76 gms with 95 percent confidence interval.  
+Diet 3: has a mean weight of 40.80 gms can be found among 40.06 gms to 41.54 gms with 95 percent confidence interval.  
+Diet 4: has a mean weight of 41.0 gms can be found among 40.24 gms to 41.75 gms with 95 percent confidence interval. The experiment is conducted for 21 days lets see how the weight has varied on day 20 with various diets. Almost all of chicks at day =0 has weight varying from  approx 39 gms to 43 gms. 
+
+By looking at the plot plotted on the right and calculations performed in R, we can say that at day = 20, we had following observations for chicks on these four diets.
+
+
+``` {r, echo =FALSE}
+library("dplyr")
+diet1_day20 <- chicken_dataset %>% filter(Time==20 & Diet==1 )
+diet2_day20 <- chicken_dataset %>% filter(Time==20 & Diet==2 )
+diet3_day20 <- chicken_dataset %>% filter(Time==20 & Diet==3 )
+diet4_day20 <- chicken_dataset %>% filter(Time==20 & Diet==4 )
+
+weight_CI_diet1_day20 <- CI(diet1_day20$weight, ci =0.95)
+weight_CI_diet2_day20 <- CI(diet2_day20$weight, ci =0.95)
+weight_CI_diet3_day20 <- CI(diet3_day20$weight, ci =0.95)
+weight_CI_diet4_day20 <- CI(diet4_day20$weight, ci =0.95)
+
+
+max_CI_day20 = c(weight_CI_diet1_day20[1],weight_CI_diet2_day20[1], weight_CI_diet3_day20[1], weight_CI_diet4_day20[1])
+min_CI_day20 = c(weight_CI_diet1_day20[3],weight_CI_diet2_day20[3], weight_CI_diet3_day20[3], weight_CI_diet4_day20[3])
+mean_CI_day20 =  c(weight_CI_diet1_day20[2],weight_CI_diet2_day20[2], weight_CI_diet3_day20[2], weight_CI_diet4_day20[2])
+
+df_diet_day20 = data.frame(cbind(min_CI_day20, mean_CI_day20, max_CI_day20))
+row.names(df_diet_day20) <- c(1,2,3,4)
+
+ggplot(df_diet_day20, aes(x = c(1,2,3,4), y = mean_CI_day20)) + geom_point(shape=21, size=1, fill="white") + geom_errorbar(aes(ymin = min_CI_day20, ymax =max_CI_day20, color = factor(c(1,2,3,4)), width = 0.2)) + ylim(50, 350) + xlab('Diet') + ylab('Weight') + theme_bw() + coord_flip() 
+
+
+```
+Diet 1 : has a mean weight of 170.41 gms can be found from 141.91 gms to 198.91 gms with 95 percent confidence interval.  
+Diet 2: has a mean weight of 205.60 gms can be found among 155.34 gms to 255.85 gms with 95 percent confidence interval.  
+Diet 3: has a mean weight of 258.90 gms can be found among 212.23 gms to 305.57 gms with 95 percent confidence interval.  
+Diet 4: has a mean weight of 233.89 gms can be found among 205.01 gms to 262.76 gms with 95 percent confidence interval.
+Thus, a simple observation leads to an inference that diet 3 had the most weight gaining effect on the chicken and diet 1 has been least effective in gaining weight compared to the other three diets.
+
+# Concluding the Analysis
+
+``` {r, echo = FALSE}
+ggplot(chicken_dataset, aes(x= Time, y = weight, color = Diet))+ geom_point() + geom_smooth(se = FALSE)+ theme_bw()
+```
+
+
+
+From the plot on the left we can see how each diet affected the weight of chicken from day =0 to day = 21. The fitting curves explains that the order of weight growth for chicken kept on diet 3 was highest and the order of weight growth for chickens kept on diet 1 was lowest. The relative effect on weight of chicken for the four diets can be written as :
+          Diet 1 < Diet 2 <  Diet 4 < Diet 3.
+Thus we can conclude, it is preferable to keep the chicken on diet 3, if the goal is to maximize its weight by the end of day 20, and to keep chicken on diet 1, if the goal is not to increase its weight too much by the end of day 20.
+
